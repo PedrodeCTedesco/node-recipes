@@ -2,11 +2,13 @@
   "name": "tcp-server",
   "version": "1.0.0",
   "description": "Servidor para rede que opera sob protocolo TCP.",
-  "main": "server.js",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "build": "rimraf dist && tsc",
+    "start": "node dist/server.js",
+    "dev": "npm run build && node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -23,5 +25,12 @@
     "url": "https://github.com/PedrodeCTedesco/node-recipes/issues"
   },
   "homepage": "https://github.com/PedrodeCTedesco/node-recipes#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/node21": "^21.0.3",
+    "@types/node": "^22.3.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
 }

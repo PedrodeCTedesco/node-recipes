@@ -1,0 +1,16 @@
+{
+    "extends": "@tsconfig/node20/tsconfig.json",
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "ES6",
+      "moduleResolution": "node", 
+      "outDir": "./dist",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/**/*.ts", "src/server.config"],
+    "exclude": ["node_modules"]
+  }
+  
