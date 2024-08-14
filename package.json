@@ -1,0 +1,27 @@
+{
+  "name": "tcp-server",
+  "version": "1.0.0",
+  "description": "Servidor para rede que opera sob protocolo TCP.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PedrodeCTedesco/node-recipes.git"
+  },
+  "keywords": [
+    "server",
+    "tcp",
+    "learning"
+  ],
+  "author": "pedro de castro tedesco",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/PedrodeCTedesco/node-recipes/issues"
+  },
+  "homepage": "https://github.com/PedrodeCTedesco/node-recipes#readme",
+  "devDependencies": {}
+}
