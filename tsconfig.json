@@ -5,12 +5,13 @@
       "module": "ES6",
       "moduleResolution": "node", 
       "outDir": "./dist",
+      "rootDir": "./src",
       "strict": true,
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true
     },
-    "include": ["src/**/*.ts", "src/server.config"],
+    "include": ["src/**/*.ts", "src/server", "src/clients/**/*.ts"],
     "exclude": ["node_modules"]
   }
   

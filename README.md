@@ -12,7 +12,9 @@ Módulo que lida com o gerenciamento de conexões de rede utilizando o pacote ``
 
 1. queue --> uma fila que armazena as conexões pendentes. Utilizado para gerenciar os clientes que aguardam para se conectar (fila de conexão)
 
-2. ``` connectionListener ```: trata as conexões que chegam ao servidor.
+2. ``` connectionListener ```: 
+- **Propósito**: gerenciar eventos de conexão de clientes individuais em um servidor
+- **Uso**: 
 
 3. ``` connections ```: estabelece conexões com o servidor remoto; envia uma mensagem indicando uma conexão bem-sucedida, além de tratar de desconexões e erros. Possui um temporizador para encerrar as conexões após um período especificado.
 
