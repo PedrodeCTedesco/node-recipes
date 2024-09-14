@@ -1,17 +1,11 @@
-import { queue, tryConnect } from "./clients/connections.js";
-import { startServer } from "./server/server.js";
+// src/main.ts
+import { startServer } from './server/server.js';
+import { startClient } from './clients/connections.js';
 
-export async function main() {
-    startServer();
-  
-    // Adiciona conexões à fila
-    queue.push({ timeout: 10000, message: "Conexão 1", name: "Pedro" });
-    queue.push({ timeout: 3000, message: "Conexão 2", name: "João" });
-    queue.push({ timeout: 1000, message: "Conexão 3", name: "Maria" });
-  
-    // Inicia o loop de conexões
-    tryConnect();
-  }
-  
-  main().catch(console.error);
-  
+// Inicia o servidor
+startServer();
+
+// Aguarda 1 segundo e inicia o cliente
+setTimeout(() => {
+  startClient();
+}, 1000);

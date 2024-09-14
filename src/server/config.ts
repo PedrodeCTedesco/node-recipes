@@ -1,12 +1,15 @@
 import { Socket } from 'net';
-import { tryConnect } from '../clients/connections.js';
+//import { tryConnect } from '../clients/connections.js';
 
 export let currentConnections: number = 0; 
 export const MAX_CONNECTIONS: number = 10; 
 export let totalRead: number = 0;
 export let totalWritten: number = 0;
-export const PORT: number = 8181;
-export const HOST: string = '127.0.0.1';
+let clients: Socket[] = [];
+export const serverConfig = {
+  port: 8181,
+  host: '127.0.0.1'
+}
 
 // Função para gerenciar o número de conexões
 export const manageConnections = (socket: Socket): boolean => {
@@ -39,43 +42,53 @@ export const handleDisconnection = (onDisconnect?: () => void, socket?: Socket) 
 
 // Função para lidar com as conexões de clientes no servidor
 export const connectionListener = (socket: Socket) => {
-  // Verifica e gerencia o número máximo de conexões
-  if (!manageConnections(socket)) 
-    return; 
+  console.log("Novo cliente conectado");
+  clients.push(socket); // adiciona novo cliente
+  socket.write("Seja bem-vindo ao chat!\n");
 
-  // O evento 'connect' não existe no lado do servidor
-  console.log(`[INFO] Conexão estabelecida com o cliente.`);
-  console.log(`[INFO] Endereço do cliente: ${socket.remoteAddress}`);
-  console.log(`[INFO] Porta do cliente: ${socket.remotePort}`);
-  console.log(`[INFO] Porta do servidor: ${socket.localPort}`);
+  let buffer = '';
 
-  // Evento para lidar com os dados recebidos do cliente
+  // dados recebidos pelo cliente
   socket.on('data', (data) => {
-    console.log('Dados recebidos do cliente:', data.toString());
-  
-    try {
-      const parsedData = JSON.parse(data.toString());
+    buffer += data.toString();  // Acumula os dados no buffer
+    const messages = buffer.split('\n');  // Divide as mensagens por linha
+    
+    // Itera sobre todas as mensagens completas
+    messages.slice(0, -1).forEach((message) => {
+      message = message.trim(); // Remove espaços extras
+      console.log('Mensagem do cliente:', message);
 
-      if (Object.keys(parsedData).length === 0) {
-        socket.write('{"status": "empty"}');
-      } else if ('name' in parsedData && parsedData.name !== null) {
-        socket.write(`{"response": "Hello ${parsedData.name}"}`);
-      } else {
-        socket.write('{"status": "invalid"}');
+      if (message.toLowerCase() === 'exit') {
+        console.log('Cliente solicitou o encerramento da conexão.');
+        socket.end('Conexão encerrada.\n');  // Encerra a conexão com o cliente
+        return;
       }
-    } catch (e: unknown) {
-      console.error('Erro ao processar dados:', e instanceof Error ? e.message : 'Erro desconhecido');
-    }
+
+      // Envia a mensagem para todos os outros clientes
+      clients.forEach(client => {
+        if (client !== socket) client.write(`Cliente diz: ${message}\n`);
+      });
+    });
+    
+    // Atualiza o buffer para manter qualquer mensagem incompleta
+    buffer = messages[messages.length - 1];
   });
 
-  // Evento quando o cliente desconecta
+  // desconexão do cliente
   socket.on('end', () => {
-    console.log('Desconectado do servidor. Total de bytes: ', totalRead += socket.bytesRead);
+    console.log('Cliente desconectado.');
+    
+    // Remove o cliente da lista quando ele se desconectar
+    clients = clients.filter(client => client !== socket);
+    console.log('Clientes restantes:', clients.length);
   });
 
   // Evento para lidar com erros de conexão
   socket.on('error', (error) => {
     console.error('Erro na conexão:', error.message);
-    handleDisconnection(tryConnect); 
+    
+    // Remove o cliente da lista em caso de erro
+    clients = clients.filter(client => client !== socket);
   });
+
 };

@@ -1,5 +1,5 @@
 import * as net from 'net';
-import { connectionListener, HOST, PORT } from './config.js';
+import { connectionListener, serverConfig } from './config.js';
 import { Server } from 'net';
 
 
@@ -9,7 +9,7 @@ export const startServer = ()=> {
     connectionListener(socket);
   });
 
-  server.listen(PORT, HOST, () => {
-    console.log(`Servidor TCP está rodando na porta ${PORT}`);
+  server.listen(serverConfig.port, serverConfig.host, () => {
+    console.log(`Servidor TCP está rodando na porta ${serverConfig.port}`);
   });
 }
