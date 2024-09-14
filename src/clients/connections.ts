@@ -11,49 +11,59 @@ export const connections = async (timeout: number, message: string, onConnect: (
       host: '127.0.0.1'
     });
 
-    // Envio de dados em JSON para que o servidor leia os dados e responda
+    // Acumulador para os dados recebidos
+    let buffer = '';
+
     socket.on('connect', () => {
       const saudacao = {
-        name: "ops",
-        obj: "salamandra"
+        name: name,
+        message: message
       };
-      socket.write(JSON.stringify(saudacao.name), () => {
-        socket.end(JSON.stringify(saudacao.obj));
-      })
+
+      // Envia a saudação para o servidor
+      socket.write(JSON.stringify(saudacao), () => {
+        // Aguarda a resposta do servidor
+        socket.on('data', (data) => {
+          console.log('Resposta do servidor:', data.toString());
+
+          // Após receber a resposta, prepara para enviar as informações do socket
+          const totalWrittenFromConfig: number = socket.bytesWritten;
+          const socketInfo = {
+            totalBytesWritten: totalWrittenFromConfig,
+            address: socket.localAddress,  // Usa localAddress para o cliente
+            port: socket.localPort,        // Usa localPort para o cliente
+          };
+
+          // Envia as informações do socket antes de encerrar a conexão
+          socket.write(JSON.stringify(socketInfo), () => {
+            console.log('Informações do socket enviadas:', socketInfo);
+
+            // Após enviar as informações, encerra a conexão
+            socket.end();
+            resolve();
+          });
+        });
+      });
     });
 
-    socket.on('data', (data) => {
-      console.log('Dados recebidos do cliente:', data.toString());
-      
+    socket.on('data', (data: Buffer) => {
+      buffer += data.toString();  // Acumula os dados recebidos no buffer
+
       try {
-        const parsedData = JSON.parse(data.toString());
-        if ('response' in parsedData) {
-          console.log('Resposta recebida:', parsedData.response);
-        } else if ('status' in parsedData) {
-          console.log('Status recebido:', parsedData.status);
+        const parsedData = JSON.parse(buffer); // Tenta parsear o buffer como JSON completo
+        if (parsedData.name) {
+          console.log('Nome recebido:', parsedData.name);
+          socket.write('hello ' + parsedData.name);
         }
-      } catch (e: unknown) {
-        console.error('Erro ao processar dados:', e instanceof Error ? e.message : 'Erro desconhecido');
+        buffer = '';  // Limpa o buffer após processar os dados com sucesso
+      } catch (e) {
+        // Mantém o buffer até que o JSON completo seja recebido
+        console.error('Erro ao processar dados:', e instanceof Error ? e.message : "");
       }
     });
-    
-    socket.on('readable', () => {
-      let data: Buffer | string;
-      while (null !== (data = socket.read())) {
-        try {
-          const parsedData = JSON.parse(data.toString());
-          if (parsedData.name) {
-            socket.write('hello ' + parsedData.name);
-          }
-        } catch (e: unknown) {
-          console.error('Erro ao processar dados:', e instanceof Error ? e.message : "");
-        }
-      };
 
-      // Quando o socket estiver pronto para ser usado, resolva a Promise
-      socket.on('ready', () => {
-        resolve(onConnect());
-      });
+    socket.on('end', () => {
+      resolve();
     });
 
     socket.on('error', (error) => {
@@ -62,31 +72,21 @@ export const connections = async (timeout: number, message: string, onConnect: (
       reject(error);
     });
 
-    socket.on('end', () => {
-      const totalWrittenFrmoConfig: number = socket.bytesWritten;
-      console.log("Total de bytes", totalWrittenFrmoConfig);
-      resolve();
-    });
-
-    // Adiciona um temporizador para desconectar a conexão após o tempo especificado
+    // Desconectar a conexão após o timeout
     setTimeout(() => {
       const seconds = Math.floor(timeout / 1000);
       console.log(`${message} desconectada após ${seconds} segundos.`);
-      handleDisconnection(tryConnect, socket);
+      socket.destroy();
       reject(new Error(`Conexão ${message} desconectada após ${seconds} segundos.`));
     }, timeout);
-    
   }).then(() => {
     if (success) {
       console.log("Processo bem-sucedido");
     }
   }).catch((error) => {
     console.error(`Erro na conexão ${message}:`, error.message);
-    if (!success) {
-      console.log("Fila", queue);
-    }
   });
-}; // fim de connection(...)
+};
 
 // função para estabelecer as conexões
 export const tryConnect = async () => {

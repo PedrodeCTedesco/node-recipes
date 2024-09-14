@@ -43,13 +43,13 @@ export const connectionListener = (socket: Socket) => {
   if (!manageConnections(socket)) 
     return; 
 
-  socket.on('connect', () => {
-    console.log(`[INFO] Conexão estabelecida com o cliente.`);
-    console.log(`[INFO] Endereço do cliente: ${socket.remoteAddress}`);
-    console.log(`[INFO] Porta do cliente: ${socket.remotePort}`);
-    console.log(`[INFO] Porta do servidor: ${socket.localPort}`);
-  });
+  // O evento 'connect' não existe no lado do servidor
+  console.log(`[INFO] Conexão estabelecida com o cliente.`);
+  console.log(`[INFO] Endereço do cliente: ${socket.remoteAddress}`);
+  console.log(`[INFO] Porta do cliente: ${socket.remotePort}`);
+  console.log(`[INFO] Porta do servidor: ${socket.localPort}`);
 
+  // Evento para lidar com os dados recebidos do cliente
   socket.on('data', (data) => {
     console.log('Dados recebidos do cliente:', data.toString());
   
@@ -67,15 +67,15 @@ export const connectionListener = (socket: Socket) => {
       console.error('Erro ao processar dados:', e instanceof Error ? e.message : 'Erro desconhecido');
     }
   });
-  
+
+  // Evento quando o cliente desconecta
   socket.on('end', () => {
-    console.log('Desconectado');
-    totalRead += socket.bytesRead;
-    handleDisconnection(tryConnect); // Passa tryConnect como callback para onDisconnect
+    console.log('Desconectado do servidor. Total de bytes: ', totalRead += socket.bytesRead);
   });
 
+  // Evento para lidar com erros de conexão
   socket.on('error', (error) => {
     console.error('Erro na conexão:', error.message);
-    handleDisconnection(tryConnect); // Também chama handleDisconnection em caso de erro
+    handleDisconnection(tryConnect); 
   });
-}; // fim de connectionListener(...)
+};
