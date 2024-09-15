@@ -1,6 +1,6 @@
 // src/clients/connections.ts
 import net from 'net';
-import { serverConfig } from '../server/config.js';
+import { manageConnections, serverConfig } from '../server/config.js';
 import readline from 'readline';
 
 export const startClient = () => {
