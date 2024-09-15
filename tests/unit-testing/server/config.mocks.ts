@@ -3,7 +3,7 @@ import { ConnectionManagerInterface } from '../../../src/server/interfaces/conne
 export class MockConnectionManager implements ConnectionManagerInterface {
     private static instance: MockConnectionManager;
     private connectionLimits: Map<string, number> = new Map(); // Limite máximo de conexões por porta
-    private connections: Map<string, Map<string, number>> = new Map(); // Conexões registradas por porta e endereço IP
+    private connections: Map<string, Map<string, number>> = new Map(); // Conexões registradas por porta e endereço IP--
 
     private constructor() {}
 
