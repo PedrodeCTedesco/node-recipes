@@ -6,10 +6,15 @@
   "type": "module",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "start": "node dist/main.js",
-    "dev": "npm run build && node dist/main.js",
-    "test": "jest",
-    "prepare": "husky"
+    "start:tcp-server": "node dist/server/tcp/server.js",
+    "start:udp-server": "node dist/server/udp/server.js",
+    "start:tcp-client": "node dist/clients/tcp/client.js",
+    "start:udp-client": "node dist/clients/udp/client.js",
+    "dev:tcp-server": "npm run build && npm run start:tcp-server",
+    "dev:udp-server": "npm run build && npm run start:udp-server",
+    "dev:tcp-client": "npm run build && npm run start:tcp-client",
+    "dev:udp-client": "npm run build && npm run start:udp-client",
+    "test": "jest"
   },
   "engines": {
     "node": "v20.11.1"
