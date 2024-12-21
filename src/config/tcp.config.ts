@@ -1,5 +1,6 @@
 import { Socket } from 'net';
 import dotenv from 'dotenv';
+import { ChatClientTCP } from '../server/interfaces/connection-manager.interface';
 dotenv.config();
 
 export const totalRead: number = 0;
@@ -9,7 +10,7 @@ export const serverConfig = {
   host: process.env.HOST ?? 'localhost'
 }
 
-let clients: Socket[] = [];
+let clients: ChatClientTCP[] = []
 
 class ConnectionManager {
   private static instance:ConnectionManager;
@@ -67,18 +68,20 @@ class ConnectionManager {
     }
   }
   
-  public unregisterConnection(port: string, remoteAddress: string): void {
-    const portConnections = this.connections.get(port);
-    if (portConnections && portConnections.has(remoteAddress)) {
-        const count = portConnections.get(remoteAddress) ?? 0;
-        if (count > 0) {
-            portConnections.set(remoteAddress, count - 1);
-            if (portConnections.get(remoteAddress) === 0) {
-                portConnections.delete(remoteAddress); // Remove address if no more connections
-            }
-        }
+public unregisterConnection(port: string, remoteAddress: string): void {
+  const portConnections = this.connections.get(port);
+  
+  const currentCount = portConnections?.get(remoteAddress) ?? 0;
+
+  if (currentCount > 0) {
+    portConnections?.set(remoteAddress, currentCount - 1);
+
+    if (portConnections?.get(remoteAddress) === 0) {
+      portConnections.delete(remoteAddress);
     }
   }
+}
+
 
   public hasPortLimit(port: string): boolean {
     return this.connectionLimits.has(port);
@@ -136,7 +139,7 @@ export const handleDisconnection = (socket: Socket): void => {
 };
 
 // Função para lidar com as conexões de clientes no servidor
-export const connectionListener = (socket: Socket): void => {
+export const connectionListener = (socket: ChatClientTCP): void => {
   const remoteAddress = socket.remoteAddress ?? 'unknown';
 
   if (!manageConnections(socket, serverConfig.port, remoteAddress)) {
@@ -144,10 +147,10 @@ export const connectionListener = (socket: Socket): void => {
   }
 
   console.log("Novo cliente conectado");
-  clients.push(socket);
-  socket.write("Seja bem-vindo ao chat!\n");
-
+  socket.write("Por favor, digite seu nome de usuário: ");
+  
   let buffer = '';
+  let waitingForUsername = true;
 
   socket.on('data', (data) => {
     buffer += data.toString();
@@ -155,7 +158,23 @@ export const connectionListener = (socket: Socket): void => {
     
     messages.slice(0, -1).forEach((message) => {
       message = message.trim();
-      console.log('Mensagem do cliente:', message);
+      
+      if (waitingForUsername) {
+        socket.username = message;
+        waitingForUsername = false;
+        clients.push(socket);
+        console.log(`Usuário ${socket.username} conectou`);
+        socket.write(`Bem-vindo ao chat, ${socket.username}!\n`);
+        // Avisa outros usuários que alguém entrou
+        clients.forEach(client => {
+          if (client !== socket && !client.destroyed) {
+            client.write(`${socket.username} entrou no chat!\n`);
+          }
+        });
+        return;
+      }
+
+      console.log(`Mensagem de ${socket.username}:`, message);
 
       if (message.toLowerCase() === 'exit') {
         socket.end('Conexão encerrada.\n');
@@ -164,7 +183,7 @@ export const connectionListener = (socket: Socket): void => {
 
       clients.forEach(client => {
         if (client !== socket && !client.destroyed) {
-          client.write(`Cliente diz: ${message}\n`);
+          client.write(`${socket.username} diz: ${message}\n`);
         }
       });
     });
@@ -173,6 +192,14 @@ export const connectionListener = (socket: Socket): void => {
   });
 
   socket.on('end', () => {
+    if (socket.username) {
+      // Avisa outros usuários que alguém saiu
+      clients.forEach(client => {
+        if (client !== socket && !client.destroyed) {
+          client.write(`${socket.username} saiu do chat.\n`);
+        }
+      });
+    }
     handleDisconnection(socket);
   });
 

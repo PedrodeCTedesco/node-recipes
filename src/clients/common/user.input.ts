@@ -24,7 +24,7 @@ export const setupUserInput = (client: Socket | MessageHandler) => {
     }
 
     if ('write' in client) {
-      client.write(input);  // TCP
+      client.write(input + '\n');  // TCP - Adicionado '\n' aqui
     } else {
       client.send(input);   // UDP
     }

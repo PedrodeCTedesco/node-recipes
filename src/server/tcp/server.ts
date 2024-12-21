@@ -2,9 +2,7 @@ import * as net from 'net';
 import { connectionListener, serverConfig } from '../../config/tcp.config.js';
 import { Server } from 'net';
 
-
-// Função para iniciar o servidor
-export const startServer = ()=> {
+export const startServer = () => {
   const server: Server = net.createServer((socket) => {
     connectionListener(socket);
   });
@@ -19,7 +17,7 @@ export const startServer = ()=> {
     } else {
       console.error('Erro no servidor:', err);
     }
-});
+  });
 
   server.on('close', () => {
     console.log('Servidor fechado');

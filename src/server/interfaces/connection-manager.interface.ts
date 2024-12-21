@@ -1,6 +1,6 @@
+import { Socket } from "net";
+
 export interface ConnectionManagerInterface {
-  // Note que a interface não pode definir métodos estáticos, mas o comentário documenta a intenção
-  // getInstance(): ConnectionManagerInterface;
   getConnectionStatus(port: string, remoteAddress: string): {
       currentConnections: number;
       maxConnections: number;
@@ -10,4 +10,8 @@ export interface ConnectionManagerInterface {
   registerConnection(port: string, remoteAddress: string): void;
   unregisterConnection(port: string, remoteAddress: string): void;
   hasPortLimit(port: string): boolean;
+}
+
+export interface ChatClientTCP extends Socket {
+  username?: string;
 }
